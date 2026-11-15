@@ -31,5 +31,16 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # Optional local Azure Blob Storage emulator, for testing uploads without an
+  # Azure account. Start with: docker compose --profile azurite up -d
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: polygon-azurite
+    profiles: ["azurite"]
+    command: azurite-blob --blobHost 0.0.0.0 --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+    restart: unless-stopped
+
 volumes:
   pgdata:

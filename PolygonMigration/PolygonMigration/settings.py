@@ -127,6 +127,11 @@ POLYGON_API_SECRET = os.getenv("POLYGON_API_SECRET")
 if not POLYGON_API_KEY or not POLYGON_API_SECRET:
     raise Exception("POLYGON_API_KEY and POLYGON_API_SECRET must be set in the .env file")
 
+# Cloud storage for test-case files. Providers are registered in problems/storage/__init__.py.
+STORAGE_PROVIDER = os.getenv("STORAGE_PROVIDER", "azure")
+
+# Azure Blob Storage: set the connection string, or the Azure AD username/password group below.
+AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 AZURE_STORAGE_ACCOUNT_URL = os.getenv("AZURE_STORAGE_ACCOUNT_URL")
 AZURE_TENANT_ID = os.getenv("AZURE_TENANT_ID")
 AZURE_CLIENT_ID = os.getenv("AZURE_CLIENT_ID")

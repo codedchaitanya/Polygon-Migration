@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .polygon_api import PolygonAPI
+from .storage import get_storage
 from .models import Problem, SampleTestCase, ProblemTestCase, ProblemTag
 from django.utils.text import slugify
 from django.db.models import Q
@@ -197,16 +198,9 @@ def index(request):
                         
                         # Problem exists in database, proceed with Azure migration
                         logger.info('Problem found in DB, proceeding with Azure migration')
-                        AZURE_STORAGE_ACCOUNT_URL = settings.AZURE_STORAGE_ACCOUNT_URL
-                        AZURE_TENANT_ID = settings.AZURE_TENANT_ID
-                        AZURE_CLIENT_ID = settings.AZURE_CLIENT_ID
-                        AZURE_USERNAME = settings.AZURE_USERNAME
-                        AZURE_PASSWORD = settings.AZURE_PASSWORD
-                        AZURE_CONTAINER_NAME = settings.AZURE_CONTAINER_NAME
-                        
                         # Use the database problem ID for Azure blob naming
                         problem_id = problem_obj.id if problem_obj else None
-                        logger.info('Azure migration params: problem_id=%s, container=%s', problem_id, AZURE_CONTAINER_NAME)
+                        logger.info('Storage migration params: problem_id=%s, provider=%s', problem_id, settings.STORAGE_PROVIDER)
                         
                         # Remove Redis cache for this problem id before Azure migration
                         if problem_obj:
@@ -218,18 +212,10 @@ def index(request):
                             logger.info('Custom checker detected before Azure migration: %s', custom_checker_info)
                             context['info'] = f"Custom checker '{custom_checker_info['name']}' detected. Will be compiled and uploaded to Azure."
                         
-                        logger.info('Calling migrate_to_azure_blob')
+                        logger.info('Calling migrate_test_cases_to_storage')
                         try:
-                            api.migrate_to_azure_blob(
-                                polygon_id,
-                                AZURE_STORAGE_ACCOUNT_URL,
-                                AZURE_TENANT_ID,
-                                AZURE_CLIENT_ID,
-                                AZURE_USERNAME,
-                                AZURE_PASSWORD,
-                                AZURE_CONTAINER_NAME,
-                                problem_id
-                            )
+                            storage = get_storage()
+                            api.migrate_test_cases_to_storage(polygon_id, storage, problem_id)
                             azure_blob_uploaded = True
                             azure_blob_problem_id = problem_id
                         except Exception as e:
