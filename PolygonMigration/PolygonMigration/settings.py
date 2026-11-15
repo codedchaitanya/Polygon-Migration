@@ -139,6 +139,9 @@ AZURE_USERNAME = os.getenv("AZURE_USERNAME")
 AZURE_PASSWORD = os.getenv("AZURE_PASSWORD")
 AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME")
 
+# Keep connection strings (which contain the storage account key) off Django's error pages.
+DEFAULT_EXCEPTION_REPORTER_FILTER = "PolygonMigration.debug.ExceptionReporterFilter"
+
 REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
