@@ -1,0 +1,35 @@
+# Local PostgreSQL + Redis for development.
+# Values match PolygonMigration/.env.example. Start with: docker compose up -d
+services:
+  postgres:
+    image: postgres:15
+    container_name: polygon-postgres
+    environment:
+      POSTGRES_DB: polygon_migration
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d polygon_migration"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    container_name: polygon-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata:

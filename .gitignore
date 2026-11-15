@@ -1,0 +1,23 @@
+# Secrets
+.env
+*.env
+!.env.example
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Django runtime output
+PolygonMigration/logs/
+PolygonMigration/staticfiles/
+
+# Local notes (not part of the submission)
+SETUP_LOG.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
