@@ -24,7 +24,7 @@ PolygonMigration is a Django-based web application designed to facilitate the mi
 ### 1. Prerequisites
 - Python 3.8+
 - PostgreSQL database
-- [Azure account](https://portal.azure.com/) with Blob Storage and an AAD application
+- [Azure account](https://portal.azure.com/) with a Blob Storage account and a container
 - Polygon API credentials
 
 ### 2. Clone the Repository
@@ -65,13 +65,17 @@ DB_PORT=5432
 POLYGON_API_KEY=your_polygon_api_key
 POLYGON_API_SECRET=your_polygon_api_secret
 
-# Azure Blob Storage
-AZURE_STORAGE_ACCOUNT_URL=https://<your-storage-account>.blob.core.windows.net/
-AZURE_TENANT_ID=your-tenant-id
-AZURE_CLIENT_ID=your-client-id
-AZURE_USERNAME=your-azure-username
-AZURE_PASSWORD=your-azure-password
+# Cloud storage for test-case files
+STORAGE_PROVIDER=azure
 AZURE_CONTAINER_NAME=your-container-name
+# Option 1 (recommended): storage account connection string
+AZURE_STORAGE_CONNECTION_STRING=your-connection-string
+# Option 2: Azure AD username/password (used only if the connection string is empty)
+# AZURE_STORAGE_ACCOUNT_URL=https://<your-storage-account>.blob.core.windows.net/
+# AZURE_TENANT_ID=your-tenant-id
+# AZURE_CLIENT_ID=your-client-id
+# AZURE_USERNAME=your-azure-username
+# AZURE_PASSWORD=your-azure-password
 
 # Redis (optional, for caching)
 REDIS_HOST=localhost
@@ -138,6 +142,33 @@ Access the app at [http://localhost:8000/](http://localhost:8000/)
   - Migrate to the database.
   - Migrate test cases to the database and/or Azure.
 
+## Cloud Storage
+
+Test-case files are uploaded through a provider-independent interface in
+`PolygonMigration/problems/storage/`:
+
+| File | Purpose |
+|------|---------|
+| `base.py` | `TestCaseStorage` interface, `StorageError`, and the file naming rules |
+| `azure_blob.py` | Azure Blob Storage implementation |
+| `__init__.py` | `get_storage()` — picks the provider from `STORAGE_PROVIDER` |
+
+File layout (the same for every provider):
+
+```
+test_cases/{problem_id}/{test_number}      # Input file
+test_cases/{problem_id}/{test_number}.a    # Output file
+```
+
+`{problem_id}` is the database ID of the problem and `{test_number}` is zero-padded to two digits (`01`, `02`, ...).
+
+To add a provider, implement the three methods of `TestCaseStorage` (`upload_file`, `list_files`,
+`delete_file`) in a new module and register it in `_PROVIDERS` in `problems/storage/__init__.py`.
+The migration flow does not need to change.
+
+To test uploads without an Azure account, start the Azurite emulator with
+`docker compose --profile azurite up -d` and use the development connection string from `.env.example`.
+
 ## Environment Variables Reference
 | Variable                  | Description                                 |
 |--------------------------|---------------------------------------------|
@@ -151,6 +182,8 @@ Access the app at [http://localhost:8000/](http://localhost:8000/)
 | DB_PORT                   | PostgreSQL port                             |
 | POLYGON_API_KEY           | Polygon API key                             |
 | POLYGON_API_SECRET        | Polygon API secret                          |
+| STORAGE_PROVIDER          | Storage provider to use (`azure`)           |
+| AZURE_STORAGE_CONNECTION_STRING | Azure storage account connection string (preferred auth) |
 | AZURE_STORAGE_ACCOUNT_URL | Azure Blob Storage account URL              |
 | AZURE_TENANT_ID           | Azure AD tenant ID                          |
 | AZURE_CLIENT_ID           | Azure AD application client ID              |
