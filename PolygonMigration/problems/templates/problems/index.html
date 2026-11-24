@@ -378,9 +378,9 @@
         if (searchInput) {
             searchInput.addEventListener('input', handleSearch);
             searchInput.addEventListener('focus', showDropdown);
-            searchInput.addEventListener('blur', function() {
-                setTimeout(hideDropdown, 200);
-            });
+            searchInput.addEventListener('blur', function() { setTimeout(hideDropdown, 200); });
+            // Keep focus in the search box while the mouse is pressed inside the dropdown
+            dropdown.addEventListener('mousedown', function(e) { e.preventDefault(); });
         }
         
         // Initialize display if the section exists
